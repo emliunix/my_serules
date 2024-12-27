@@ -1,0 +1,90 @@
+policy_module(uuplugin, 1.0.0)
+
+require {
+    type tmp_t;
+}
+
+########################################
+#
+# Declarations
+#
+
+type uuplugin_t;
+type uuplugin_exec_t;
+init_daemon_domain(uuplugin_t, uuplugin_exec_t)
+
+type uuplugin_tmp_t;
+files_tmp_file(uuplugin_tmp_t)
+
+type uuplugin_var_run_t;
+files_pid_file(uuplugin_var_run_t)
+
+# permissive uuplugin_t;
+
+########################################
+#
+# uuplugin local policy
+#
+
+# create files
+files_tmp_filetrans(uuplugin_t, uuplugin_tmp_t, { file dir })
+files_pid_filetrans(uuplugin_t, uuplugin_var_run_t, { file })
+allow uuplugin_t uuplugin_tmp_t:file { setattr };
+
+# execute
+files_mmap_exec_all_files(uuplugin_t)
+exec_files_pattern(uuplugin_t, bin_t, bin_t)
+exec_files_pattern(uuplugin_t, uuplugin_tmp_t, uuplugin_tmp_t)
+
+# networking
+userdom_basic_networking(uuplugin_t)
+corenet_rw_tun_tap_dev(uuplugin_t)
+corenet_tcp_bind_all_ports(uuplugin_t) 
+corenet_tcp_bind_all_nodes(uuplugin_t)
+corenet_udp_bind_all_ports(uuplugin_t)
+corenet_udp_bind_all_nodes(uuplugin_t)
+corenet_raw_bind_all_nodes(uuplugin_t)
+corenet_tcp_sendrecv_all_ports(uuplugin_t)
+corenet_tcp_connect_all_ports(uuplugin_t)
+corenet_udp_sendrecv_all_ports(uuplugin_t)
+corenet_raw_sendrecv_all_nodes(uuplugin_t)
+allow uuplugin_t self:netlink_route_socket { create_netlink_socket_perms r_netlink_socket_perms };
+
+# iptables
+kernel_search_network_state(uuplugin_t)
+kernel_read_network_state(uuplugin_t)
+allow uuplugin_t self:netlink_netfilter_socket all_netlink_netfilter_socket_perms;
+iptables_exec(uuplugin_t)
+
+# curl
+sysnet_read_config(uuplugin_t)
+miscfiles_read_all_certs(uuplugin_t)
+
+# sysctl_net_t
+kernel_search_network_sysctl(uuplugin_t)
+kernel_rw_net_sysctls(uuplugin_t)
+
+# modprobe
+modutils_read_module_config(uuplugin_t)
+modutils_exec_kmod(uuplugin_t)
+
+# ifconfig
+sysnet_exec_ifconfig(uuplugin_t)
+
+# allow ps
+domain_search_all_domains_state(uuplugin_t)
+domain_read_all_domains_state(uuplugin_t)
+kernel_list_proc(uuplugin_t)
+kernel_read_proc_files(uuplugin_t)
+kernel_getattr_proc_files(uuplugin_t)
+dev_list_sysfs(uuplugin_t)
+dev_read_sysfs(uuplugin_t)
+
+# capabilities
+allow uuplugin_t self:process setrlimit;
+allow uuplugin_t self:capability all_capability_perms;
+allow uuplugin_t self:cap_userns all_cap_userns_perms;
+
+# df
+fs_read_configfs_files(uuplugin_t)
+fs_getattr_all_fs(uuplugin_t)

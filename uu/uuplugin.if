@@ -1,0 +1,40 @@
+
+## <summary>policy for uuplugin</summary>
+
+########################################
+## <summary>
+##	Execute uuplugin_exec_t in the uuplugin domain.
+## </summary>
+## <param name="domain">
+## <summary>
+##	Domain allowed to transition.
+## </summary>
+## </param>
+#
+interface(`uuplugin_domtrans',`
+	gen_require(`
+		type uuplugin_t, uuplugin_exec_t;
+	')
+
+	corecmd_search_bin($1)
+	domtrans_pattern($1, uuplugin_exec_t, uuplugin_t)
+')
+
+######################################
+## <summary>
+##	Execute uuplugin in the caller domain.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`uuplugin_exec',`
+	gen_require(`
+		type uuplugin_exec_t;
+	')
+
+	corecmd_search_bin($1)
+	can_exec($1, uuplugin_exec_t)
+')
